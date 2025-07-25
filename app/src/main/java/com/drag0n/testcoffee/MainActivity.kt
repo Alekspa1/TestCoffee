@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
             composable("Registation") {
                 CenteredRegistrationScreen(
                     { navController.navigate("CoffeeShop") },
-                    text = "Близжайшие кофейни", model
+                    text = "Регистрация", model
                 )
 
 
