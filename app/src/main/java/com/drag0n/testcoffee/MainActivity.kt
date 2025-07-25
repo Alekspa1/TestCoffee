@@ -20,6 +20,7 @@ import com.drag0n.testcoffee.presentation.CoffeeShopList
 import com.drag0n.testcoffee.presentation.LocationScreen
 import com.drag0n.testcoffee.presentation.ViewModelCoffee
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.random.Random
 
 
 @AndroidEntryPoint
@@ -46,11 +47,11 @@ class MainActivity : ComponentActivity() {
 
         }
         val sampleShops = listOf(
-            CoffeeShopItem("BEDOEV COFFEE", "1 KM or Bac", Point("55.7558", "37.6176")),
-            CoffeeShopItem("Coffee Like", "2 KM or Bac", Point("65.7558", "47.6176")),
-            CoffeeShopItem("EMBDI Coffee and Snacks", "1 KM or Bac", Point("75.7558", "57.6176")),
-            CoffeeShopItem("Kodobe ecrb", "300 M or Bac", Point("85.7558", "67.6176")),
-            CoffeeShopItem("BEDOEV COFFEE 2", "3 KM or Bac", Point("95.7558", "77.6176"))
+            CoffeeShopItem("BEDOEV COFFEE", "1 KM or Bac", randomPoint()),
+            CoffeeShopItem("Coffee Like", "2 KM or Bac", randomPoint()),
+            CoffeeShopItem("EMBDI Coffee and Snacks", "1 KM or Bac", randomPoint()),
+            CoffeeShopItem("Kodobe ecrb", "300 M or Bac", randomPoint()),
+            CoffeeShopItem("BEDOEV COFFEE 2", "3 KM or Bac", randomPoint())
         )
         NavHost(
             navController = navController, startDestination =
@@ -81,6 +82,16 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    }
+
+    fun randomPoint(): Point {
+        val moscowLatRange = 55.5..55.9
+        val moscowLonRange = 37.3..37.8
+
+        return Point(
+           Random.nextDouble(moscowLatRange.start, moscowLatRange.endInclusive).toString(),
+            Random.nextDouble(moscowLonRange.start, moscowLonRange.endInclusive).toString()
+        )
     }
 
 
