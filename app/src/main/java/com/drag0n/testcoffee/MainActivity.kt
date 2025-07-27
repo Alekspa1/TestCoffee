@@ -7,12 +7,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.drag0n.testcoffee.domain.model.CoffeeShopItem
 import com.drag0n.testcoffee.domain.model.Point
 import com.drag0n.testcoffee.presentation.Authorization
 import com.drag0n.testcoffee.presentation.CenteredRegistrationScreen
@@ -40,19 +41,14 @@ class MainActivity : ComponentActivity() {
     fun Navigation() {
         val model: ViewModelCoffee = hiltViewModel()
         val navController = rememberNavController()
+        val cofeeShop by model.CoffeeShopsFlow.collectAsStateWithLifecycle()
         LocationScreen()
         if (model.chekPermissionLocation()) model.chekLocation()
         else pLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         model.myGeo.asLiveData().observe(this) {
 
         }
-        val sampleShops = listOf(
-            CoffeeShopItem("BEDOEV COFFEE", "1 KM or Bac", randomPoint()),
-            CoffeeShopItem("Coffee Like", "2 KM or Bac", randomPoint()),
-            CoffeeShopItem("EMBDI Coffee and Snacks", "1 KM or Bac", randomPoint()),
-            CoffeeShopItem("Kodobe ecrb", "300 M or Bac", randomPoint()),
-            CoffeeShopItem("BEDOEV COFFEE 2", "3 KM or Bac", randomPoint())
-        )
+
         NavHost(
             navController = navController, startDestination =
                 if (model.isAuthorization()) "CoffeeShop"
@@ -74,7 +70,6 @@ class MainActivity : ComponentActivity() {
             composable("CoffeeShop") {
                 model.getCoffeeShops()
                 CoffeeShopList(
-                    sampleShops,
                     { navController.navigate("Registation") },
                     text = "Близжайшие кофейни",
                     model

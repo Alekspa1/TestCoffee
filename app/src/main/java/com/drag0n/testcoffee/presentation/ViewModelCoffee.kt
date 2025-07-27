@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.drag0n.testcoffee.data.api.ApiCoffee
 import com.drag0n.testcoffee.data.sharedPreferense.SharedPreferenseImp
+import com.drag0n.testcoffee.data.sharedPreferense.SharedPreferenseRepository
 import com.drag0n.testcoffee.domain.geo.GeoLocationImp
 import com.drag0n.testcoffee.domain.model.CoffeeShopList
 import com.drag0n.testcoffee.domain.model.Point
@@ -30,7 +31,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ViewModelCoffee @Inject constructor(
-    val pref: SharedPreferenseImp,
+    val pref: SharedPreferenseRepository,
     val api: ApiCoffee,
     val context: Context,
     val geo: GeoLocationImp
@@ -41,7 +42,7 @@ class ViewModelCoffee @Inject constructor(
     private var fLocotionClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
 
-    val CoffeeShopsLD = MutableLiveData<CoffeeShopList>()
+    val CoffeeShopsFlow = MutableStateFlow<CoffeeShopList?>(null)
 
 
     private val _myGeo = MutableStateFlow<Point?>(null)
@@ -63,6 +64,11 @@ class ViewModelCoffee @Inject constructor(
         pref.saveAuthorization(user)
     }
 
+    fun saveToken(token: String){
+        pref.savetoken(token)
+    }
+    fun getToken() = pref.gettoken()
+
     fun deleteUser() {
         pref.deleteAuthorization()
     }
@@ -75,6 +81,7 @@ class ViewModelCoffee @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = api.authRegister(user)
+                saveToken(response.body()!!.token)
                 if (response.isSuccessful) saveUser(user)
                 else toast()
             } catch (e: Exception) {
@@ -87,7 +94,10 @@ class ViewModelCoffee @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = api.authLogin(user)
-                if (response.isSuccessful) saveUser(user)
+                if (response.isSuccessful) {
+                    saveToken(response.body()!!.token)
+                    saveUser(user)
+                }
                 else toast()
             } catch (e: Exception) {
                 toast()
@@ -126,7 +136,6 @@ class ViewModelCoffee @Inject constructor(
                     val lon = it.result.longitude.toString()
                     val point = Point(lat, lon)
                     _myGeo.value = point
-                    Log.d("MyLog", "c геолокации${point}")
                 } catch (_: Exception) {
 
                 }
@@ -137,12 +146,10 @@ class ViewModelCoffee @Inject constructor(
     fun getCoffeeShops() {
         viewModelScope.launch {
             try {
-                val response = api.getCoffeeShops()
+                val token = "Bearer ${getToken()}"
+                val response = api.getCoffeeShops(token)
                 if (response.isSuccessful) {
-                    CoffeeShopsLD.postValue(response.body())
-                    Log.d(
-                        "MyLog", "isSiccessful: ${response.body().toString()}"
-                    )
+                    CoffeeShopsFlow.value = response.body()
                 }
             } catch (e: Exception) {
                 toast()

@@ -6,6 +6,7 @@ import com.drag0n.testcoffee.domain.model.UserRegisterOrAuthorization
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface ApiCoffee {
@@ -21,8 +22,10 @@ interface ApiCoffee {
     ): Response<UserRegisterOrAuthorization>
 
 
-    @GET("location")
-    suspend fun getCoffeeShops(): Response<CoffeeShopList>
+    @GET("locations")
+    suspend fun getCoffeeShops(
+        @Header ("Authorization") token: String,
+    ): Response<CoffeeShopList>
 
 
 }

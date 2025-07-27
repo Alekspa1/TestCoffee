@@ -1,6 +1,7 @@
 package com.drag0n.testcoffee.presentation
 
 import android.location.Location
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -68,7 +69,7 @@ fun CoffeeShopItem(shop: CoffeeShopItem, model: ViewModelCoffee) {
                 .padding(16.dp)
         ) {
             Text(
-                text = shop.id,
+                text = shop.name,
                 fontSize = 30.sp,
                 color = input,
                 fontWeight = FontWeight.Bold
@@ -87,11 +88,11 @@ fun CoffeeShopItem(shop: CoffeeShopItem, model: ViewModelCoffee) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CoffeeShopList(
-    shops: List<CoffeeShopItem>,
     onNavigate: () -> Unit,
     text: String,
     model: ViewModelCoffee
 ) {
+    val cofeeShop by model.CoffeeShopsFlow.collectAsStateWithLifecycle()
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -119,15 +120,18 @@ fun CoffeeShopList(
             )
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            items(shops) { shop ->
-                CoffeeShopItem(shop, model)
+        if (cofeeShop != null){
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                items(cofeeShop as List<Any?>) { shop ->
+                    CoffeeShopItem(shop as CoffeeShopItem, model)
+                }
             }
         }
+
     }
 }
 

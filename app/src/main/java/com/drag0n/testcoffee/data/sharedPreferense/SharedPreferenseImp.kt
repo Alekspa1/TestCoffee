@@ -25,4 +25,12 @@ class SharedPreferenseImp @Inject constructor(context: Context) : SharedPreferen
          val user = gson.fromJson(json, User::class.java) ?: User("", "")
         return  (!user.login.isEmpty() && !user.password.isEmpty())
     }
+
+    override fun savetoken(token: String) {
+       sharedPref.edit { putString("TOKEN", token) }
+    }
+
+    override fun gettoken(): String {
+        return sharedPref.getString("TOKEN", "")!!
+    }
 }
