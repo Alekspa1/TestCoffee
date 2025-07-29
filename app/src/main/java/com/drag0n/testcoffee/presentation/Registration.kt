@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.drag0n.testcoffee.domain.model.User
 import com.drag0n.testcoffee.ui.theme.input
 import com.drag0n.testcoffee.ui.theme.inputButton
@@ -36,7 +37,7 @@ import com.drag0n.testcoffee.ui.theme.textButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CenteredRegistrationScreen(onNavigate: () -> Unit, text: String, model: ViewModelCoffee) {
+fun CenteredRegistrationScreen(onNavigate: NavHostController, text: String, model: ViewModelCoffee) {
     Scaffold(
         modifier = Modifier.fillMaxWidth(),
         topBar = {
@@ -73,7 +74,7 @@ fun CenteredRegistrationScreen(onNavigate: () -> Unit, text: String, model: View
 
 
 @Composable
-fun RegistrationScreen(onNavigateToHome: () -> Unit, model: ViewModelCoffee) {
+fun RegistrationScreen(onNavigate: NavHostController, model: ViewModelCoffee) {
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -150,7 +151,7 @@ fun RegistrationScreen(onNavigateToHome: () -> Unit, model: ViewModelCoffee) {
                 if (isEmailValid && passwordsMatch && isPasswordValid) {
                     val user = User(emailState.value, passwordState.value)
                     model.authRegister(user)
-                    onNavigateToHome()
+                    onNavigate.navigate("CoffeeShop")
                 }
             },
             shape = RoundedCornerShape(30.dp),
@@ -165,6 +166,22 @@ fun RegistrationScreen(onNavigateToHome: () -> Unit, model: ViewModelCoffee) {
                 .height(48.dp)
         ) {
             Text("Регистрация")
+        }
+        Button(
+            onClick = { onNavigate.navigate("Authorization")
+            },
+            shape = RoundedCornerShape(30.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = inputButton,
+                contentColor = textButton,
+            ),
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth()
+                .height(48.dp)
+
+        ) {
+            Text("Авторизоваться")
         }
     }
 }

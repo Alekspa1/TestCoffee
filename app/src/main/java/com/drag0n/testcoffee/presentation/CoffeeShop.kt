@@ -1,7 +1,7 @@
 package com.drag0n.testcoffee.presentation
 
 import android.location.Location
-import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -33,13 +33,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import com.drag0n.testcoffee.domain.model.CoffeeShopItem
 import com.drag0n.testcoffee.ui.theme.cardCoffee
 import com.drag0n.testcoffee.ui.theme.input
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 @Composable
-fun CoffeeShopItem(shop: CoffeeShopItem, model: ViewModelCoffee) {
+fun CoffeeShopItem(shop: CoffeeShopItem, model: ViewModelCoffee, onNavigate: NavHostController ) {
     val currentLocation by model.myGeo.collectAsStateWithLifecycle()
     val distanceText = remember(currentLocation) {
         when {
@@ -59,7 +63,11 @@ fun CoffeeShopItem(shop: CoffeeShopItem, model: ViewModelCoffee) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 10.dp, start = 8.dp, end = 8.dp),
+            .padding(bottom = 10.dp, start = 8.dp, end = 8.dp)
+            .clickable {
+                model.getMenuCoffeeShops(shop.id.toInt())
+                onNavigate.navigate("MenuCoffeeShops")
+            },
         shape = RoundedCornerShape(10.dp),
         colors = cardColors(cardCoffee)
     ) {
@@ -85,14 +93,16 @@ fun CoffeeShopItem(shop: CoffeeShopItem, model: ViewModelCoffee) {
 }
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CoffeeShopList(
-    onNavigate: () -> Unit,
+    onNavigate: NavHostController,
     text: String,
     model: ViewModelCoffee
 ) {
-    val cofeeShop by model.CoffeeShopsFlow.collectAsStateWithLifecycle()
+    model.getCoffeeShops()
+    val cofeeShop by model.coffeeShopsFlow.collectAsStateWithLifecycle()
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -113,7 +123,9 @@ fun CoffeeShopList(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { model.deleteUser()}) {
+                    IconButton(onClick = {
+                        onNavigate.popBackStack()
+                        model.deleteUser()}) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 }
@@ -127,7 +139,7 @@ fun CoffeeShopList(
                     .padding(innerPadding)
             ) {
                 items(cofeeShop as List<Any?>) { shop ->
-                    CoffeeShopItem(shop as CoffeeShopItem, model)
+                    CoffeeShopItem(shop as CoffeeShopItem, model, onNavigate)
                 }
             }
         }

@@ -42,6 +42,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.glide)
+    implementation(libs.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.runtime.livedata)
     implementation (libs.hilt.android)

@@ -8,14 +8,14 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.drag0n.testcoffee.data.api.ApiCoffee
-import com.drag0n.testcoffee.data.sharedPreferense.SharedPreferenseImp
 import com.drag0n.testcoffee.data.sharedPreferense.SharedPreferenseRepository
 import com.drag0n.testcoffee.domain.geo.GeoLocationImp
 import com.drag0n.testcoffee.domain.model.CoffeeShopList
+import com.drag0n.testcoffee.domain.model.MenuCoffeeShop
+import com.drag0n.testcoffee.domain.model.MenuCoffeeShopItem
 import com.drag0n.testcoffee.domain.model.Point
 import com.drag0n.testcoffee.domain.model.User
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -26,7 +26,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,11 +44,36 @@ class ViewModelCoffee @Inject constructor(
     private var fLocotionClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
 
-    val CoffeeShopsFlow = MutableStateFlow<CoffeeShopList?>(null)
+    val coffeeShopsFlow = MutableStateFlow<CoffeeShopList?>(null)
+    val menuCoffeeShopsFlow = MutableStateFlow<MenuCoffeeShop?>(null)
 
 
     private val _myGeo = MutableStateFlow<Point?>(null)
     val myGeo = _myGeo.asStateFlow()
+
+    private val _cartItems = MutableStateFlow<Map<MenuCoffeeShopItem, Int>>(emptyMap())
+    val cartItems: StateFlow<Map<MenuCoffeeShopItem, Int>> = _cartItems.asStateFlow()
+
+    fun addToCart(item: MenuCoffeeShopItem) {
+        _cartItems.update { currentMap ->
+            currentMap.toMutableMap().apply {
+                this[item] = (this[item] ?: 0) + 1
+            }
+        }
+    }
+
+    fun removeFromCart(item: MenuCoffeeShopItem) {
+        _cartItems.update { currentMap ->
+            currentMap.toMutableMap().apply {
+                val current = this[item] ?: 0
+                if (current > 1) {
+                    this[item] = current - 1
+                } else {
+                    remove(item)
+                }
+            }
+        }
+    }
 
     fun hideLocationDialog() {
         _showLocationDialog.value = false
@@ -148,16 +175,28 @@ class ViewModelCoffee @Inject constructor(
             try {
                 val token = "Bearer ${getToken()}"
                 val response = api.getCoffeeShops(token)
+                if (response.isSuccessful) coffeeShopsFlow.value = response.body()
+            } catch (e: HttpException) {
+                when (e.code()) {
+                    401 -> deleteUser()
+                    else -> println("Ошибка ${e.code()}")
+                }
+            }
+        }
+    }
+    fun getMenuCoffeeShops(id: Int) {
+        viewModelScope.launch {
+            try {
+                val token = "Bearer ${getToken()}"
+                val response = api.getMenuCoffeeShops(token, id)
                 if (response.isSuccessful) {
-                    CoffeeShopsFlow.value = response.body()
+                    menuCoffeeShopsFlow.value = response.body()
                 }
             } catch (e: Exception) {
                 toast()
             }
         }
     }
-
-
     private fun toast() {
         Toast.makeText(context, "Ошибка", Toast.LENGTH_SHORT).show()
     }

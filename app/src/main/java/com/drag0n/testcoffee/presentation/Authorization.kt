@@ -1,5 +1,6 @@
 package com.drag0n.testcoffee.presentation
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.drag0n.testcoffee.domain.model.User
 import com.drag0n.testcoffee.ui.theme.input
 import com.drag0n.testcoffee.ui.theme.inputButton
@@ -38,7 +40,7 @@ import com.drag0n.testcoffee.ui.theme.textButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Authorization(onNavigate: () -> Unit, text: String, model: ViewModelCoffee){
+fun Authorization(onNavigate: NavHostController, text: String, model: ViewModelCoffee){
     Scaffold(modifier = Modifier.fillMaxWidth(),
         topBar = {
             TopAppBar(
@@ -115,8 +117,9 @@ fun Authorization(onNavigate: () -> Unit, text: String, model: ViewModelCoffee){
                 onClick = {
                     if (isEmailValid && isPasswordValid) {
                         val user = User(emailState.value, passwordState.value)
-                        onNavigate()
                         model.authLogin(user)
+                        onNavigate.navigate("CoffeeShop")
+
                     }
                 },
                 shape = RoundedCornerShape(30.dp),
@@ -132,6 +135,22 @@ fun Authorization(onNavigate: () -> Unit, text: String, model: ViewModelCoffee){
             ) {
                 Text("Войти")
             }
+            Button(
+                onClick = { onNavigate.navigate("Registation")
+                },
+                shape = RoundedCornerShape(30.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = inputButton,
+                    contentColor = textButton,
+                ),
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .height(48.dp)
+
+            ) {
+                Text("Регистрация")
+            }
         }
 
     }
@@ -141,3 +160,4 @@ fun Authorization(onNavigate: () -> Unit, text: String, model: ViewModelCoffee){
 
 
     }
+
